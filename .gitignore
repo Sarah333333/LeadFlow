@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# database dumps (contain customer data)
+/backups
+
+# the template (names/placeholders only) IS committed; real env files are not
+!.env.example

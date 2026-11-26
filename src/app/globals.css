@@ -1,26 +1,46 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Neutral, warm-grey base — calm and trustworthy, not "AI purple". */
+  --color-canvas: #f7f7f5;
+  --color-surface: #ffffff;
+  --color-line: #e6e5e1;
+  --color-line-strong: #d4d3ce;
+  --color-ink: #1a1a18;
+  --color-ink-2: #3f3e3a;
+  --color-muted: #75736c;
+  --color-faint: #a3a19a;
+
+  /* Brand: deep "trade" green. Money, go, done. */
+  --color-brand: #12714f;
+  --color-brand-hover: #0d5c40;
+  --color-brand-soft: #e7f3ee;
+
+  /* Lead temperature */
+  --color-hot: #d9480f;
+  --color-hot-soft: #fdeee6;
+  --color-warm: #b7791f;
+  --color-warm-soft: #fbf3e2;
+  --color-cold: #5a6b7d;
+  --color-cold-soft: #eef1f4;
+
+  --color-danger: #c92a2a;
+  --color-danger-soft: #fcebeb;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+html, body { background: var(--color-canvas); color: var(--color-ink); }
+body { font-family: var(--font-sans); font-feature-settings: "cv11", "ss01"; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+::selection { background: var(--color-brand-soft); }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Shared form control look */
+@layer components {
+.field {
+  @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink shadow-[0_1px_0_rgba(0,0,0,0.02)]
+         placeholder:text-faint outline-none transition focus:border-ink-2 focus:ring-4 focus:ring-black/5
+         disabled:bg-canvas disabled:text-muted;
+}
 }
