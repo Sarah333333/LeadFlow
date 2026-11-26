@@ -15,6 +15,8 @@ npx supabase link --project-ref YOUR_PROJECT_REF
 npx supabase db push
 ```
 
+   **No terminal?** Open `supabase/setup/all_migrations.sql`, paste the whole file into the Supabase **SQL Editor** of the **new, empty** project, and click Run. It runs in one transaction, so it either applies completely or not at all. It also records the migrations, so `supabase db push` won't re-apply them later. Regenerate it after adding a migration with `bash scripts/combine-migrations.sh`.
+
 3. Under **Authentication → URL configuration**, set the Site URL to your app URL and add `https://YOUR-APP/auth/callback` to the redirect URLs.
 4. Under **Authentication → Providers → Email**, keep "Confirm email" **on**. Under **Authentication → Policies / Security**, set:
    - Minimum password length **10**, and turn on **leaked password protection**

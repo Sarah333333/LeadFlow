@@ -125,14 +125,14 @@ isOneToOne: false
                   ]
                 },"follow_ups": {
                   Row: {
-                    "attempts": number,"business_id": string,"created_at": string,"id": string,"lead_id": string,"message_id": string | null,"note": string | null,"processed_at": string | null,"scheduled_for": string,"status": string,"step": number
+                    "attempts": number,"business_id": string,"claimed_at": string | null,"created_at": string,"id": string,"lead_id": string,"message_id": string | null,"note": string | null,"processed_at": string | null,"scheduled_for": string,"status": string,"step": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "attempts"?: number,"business_id": string,"created_at"?: string,"id"?: string,"lead_id": string,"message_id"?: string | null,"note"?: string | null,"processed_at"?: string | null,"scheduled_for": string,"status"?: string,"step": number
+                    "attempts"?: number,"business_id": string,"claimed_at"?: string | null,"created_at"?: string,"id"?: string,"lead_id": string,"message_id"?: string | null,"note"?: string | null,"processed_at"?: string | null,"scheduled_for": string,"status"?: string,"step": number
                   }
                   Update: {
-                    "attempts"?: number,"business_id"?: string,"created_at"?: string,"id"?: string,"lead_id"?: string,"message_id"?: string | null,"note"?: string | null,"processed_at"?: string | null,"scheduled_for"?: string,"status"?: string,"step"?: number
+                    "attempts"?: number,"business_id"?: string,"claimed_at"?: string | null,"created_at"?: string,"id"?: string,"lead_id"?: string,"message_id"?: string | null,"note"?: string | null,"processed_at"?: string | null,"scheduled_for"?: string,"status"?: string,"step"?: number
                   }
                   Relationships: [
                     {

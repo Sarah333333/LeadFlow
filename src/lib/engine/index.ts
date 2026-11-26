@@ -703,17 +703,27 @@ export async function deleteBusinessAccount(businessId: string, userId: string) 
 
 // ─────────────────────────── background processing (cron) ───────────────────────────
 const FOLLOW_UP_MAX_ATTEMPTS = 3;
+const FOLLOW_UP_RUN_BUDGET_MS = 40_000;      // stay well inside the 60s function limit
+const STALE_CLAIM_MS = 10 * 60_000;          // a claim older than this was left by a killed run
 
 /** Sends due follow-ups. Safe to run concurrently: each follow-up is claimed atomically. */
 export async function processDueFollowUps(max = 25) {
   const db = createAdminClient();
+  const startedAt = Date.now();
+
+  // Recovery: release claims left by a run that was killed mid-way (they would otherwise stay "processing" forever).
+  const { data: stale } = await db.from("follow_ups").update({ status: "pending", claimed_at: null, note: "Released after an interrupted run" })
+    .eq("status", "processing").lt("claimed_at", new Date(Date.now() - STALE_CLAIM_MS).toISOString()).select("id");
+  if (stale?.length) log.warn("followup.stale_claims_released", { count: stale.length });
   const { data: due } = await db.from("follow_ups").select("id")
     .eq("status", "pending").lte("scheduled_for", new Date().toISOString())
     .order("scheduled_for").limit(max);
 
   const results: { id: string; outcome: string }[] = [];
   for (const { id } of due ?? []) {
-    const { data: claimed } = await db.from("follow_ups").update({ status: "processing" })
+    // Time budget: leave the rest for the next run rather than risk being killed mid-claim.
+    if (Date.now() - startedAt > FOLLOW_UP_RUN_BUDGET_MS) { log.info("followup.run_budget_reached", { processed: results.length }); break; }
+    const { data: claimed } = await db.from("follow_ups").update({ status: "processing", claimed_at: new Date().toISOString() })
       .eq("id", id).eq("status", "pending").select().maybeSingle();
     if (!claimed) continue; // another worker got it
 

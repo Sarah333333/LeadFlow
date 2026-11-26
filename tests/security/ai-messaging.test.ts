@@ -101,7 +101,8 @@ describe("AI failures", () => {
 
   it("a follow-up whose AI call fails is retried later, not sent and not lost", async () => {
     const lead = await testLead(T);
-    const { data: fu } = await admin.from("follow_ups").insert({ business_id: T.businessId, lead_id: lead.id, step: 0, scheduled_for: new Date(Date.now() - 60_000).toISOString() }).select().single();
+    // Oldest due time, so it's processed first even if the shared test database has a backlog.
+    const { data: fu } = await admin.from("follow_ups").insert({ business_id: T.businessId, lead_id: lead.id, step: 0, scheduled_for: "2000-01-01T00:00:00Z" }).select().single();
     await mockMode("fail");
     await runCron();
     const after = (await admin.from("follow_ups").select("*").eq("id", fu!.id).single()).data!;
@@ -109,6 +110,24 @@ describe("AI failures", () => {
     expect(after.attempts).toBe(1);
     expect(new Date(after.scheduled_for).getTime()).toBeGreaterThan(Date.now());
     expect((await messagesOf(lead.id)).filter((m) => m.is_follow_up)).toHaveLength(0);
+  });
+});
+
+describe("follow-up processing reliability", () => {
+  it("a follow-up left 'processing' by a killed run is released and retried (never stranded)", async () => {
+    const lead = await testLead(T);
+    const { data: fu } = await admin.from("follow_ups").insert({ business_id: T.businessId, lead_id: lead.id, step: 0,
+      scheduled_for: "2000-01-01T00:00:00Z", status: "processing", claimed_at: new Date(Date.now() - 30 * 60_000).toISOString() }).select().single();
+    await runCron();
+    const after = (await admin.from("follow_ups").select("status, note").eq("id", fu!.id).single()).data!;
+    expect(after.status).not.toBe("processing");
+  });
+  it("a follow-up claimed moments ago by a running worker is NOT stolen", async () => {
+    const lead = await testLead(T);
+    const { data: fu } = await admin.from("follow_ups").insert({ business_id: T.businessId, lead_id: lead.id, step: 0,
+      scheduled_for: "2000-01-01T00:00:00Z", status: "processing", claimed_at: new Date().toISOString() }).select().single();
+    await runCron();
+    expect((await admin.from("follow_ups").select("status").eq("id", fu!.id).single()).data!.status).toBe("processing");
   });
 });
 
